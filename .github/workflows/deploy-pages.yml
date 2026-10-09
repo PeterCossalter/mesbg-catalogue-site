@@ -27,14 +27,12 @@ jobs:
         shell: bash
         run: |
           test -z "$(find . -path './.git' -prune -o -type l -print)"
-          test "$(find . -mindepth 1 -path './.git' -prune -o -printf '%P\n' | LC_ALL=C sort)" = "$(printf '%s\n' '.gitattributes' '.github' '.github/workflows' '.github/workflows/deploy-pages.yml' 'site' 'site/FAQ evidence.html' 'site/Pilot report.html' 'site/index.html')"
+          test "$(find . -mindepth 1 -path './.git' -prune -o -printf '%P\n' | LC_ALL=C sort)" = "$(printf '%s\n' '.gitattributes' '.github' '.github/workflows' '.github/workflows/deploy-pages.yml' 'EXPORT.sha256' 'site' 'site/FAQ evidence.html' 'site/Pilot report.html' 'site/index.html')"
           test -z "$(find site -mindepth 1 ! -type f -print)"
-          sha256sum --check --strict <<'SHA256'
-          bed5ee1a8c268cb0296a8fd38c8730872fd15bd0bb54b94331e134731b9626b3  .gitattributes
-          3a7b48cec1b38eeb54d9f135298bd300a1537bcefb6b27d732bfafc9c90f1787  site/FAQ evidence.html
-          7bf96c94454ff8a2e4133f008abf50fde32e459cdc33373b7c19ae8d9426e02c  site/Pilot report.html
-          dfaea3e86897b64cf4dd6970ec058830b78e97e83fa928ce8c42b8ba8b3ea0fb  site/index.html
-          SHA256
+          test "$(wc -l < EXPORT.sha256)" -eq 5
+          test "$(grep -Ec '^[a-f0-9]{64}  [^[:cntrl:]]+$' EXPORT.sha256)" -eq 5
+          test "$(cut -c67- EXPORT.sha256 | LC_ALL=C sort)" = "$(printf '%s\n' '.gitattributes' '.github/workflows/deploy-pages.yml' 'site/FAQ evidence.html' 'site/Pilot report.html' 'site/index.html')"
+          sha256sum --check --strict EXPORT.sha256
       - name: Upload only the website
         uses: actions/upload-pages-artifact@7b1f4a764d45c48632c6b24a0339c27f5614fb0b # v4
         with:
